@@ -12,6 +12,7 @@ import pandas
 import random
 import numpy as np
 from sklearn import preprocessing
+from sklearn.cluster import KMeans
 import os
 
 
@@ -58,10 +59,6 @@ def create_photo(npdata):
     df = df.sort_index(ascending=False)
     return df
 
-def create_dataset(ClusterGenerator):
-    # This function calls CreateClusters to generate the dataset
-    data = CreateClusters(ClusterGenerator)
-    return data
 
 def CreateClusters(ClustersDefinition):
     # This function generates the dataset object including all the signals specified in ClusterGenerator
@@ -113,6 +110,7 @@ def plot_df(data,normalized):
     
 def normalize_data(data):
     # Clustering like KMeans calls for scaled features.
+    data = data.astype('float')
     std_scale = preprocessing.MinMaxScaler().fit(data.transpose())
     df_std = std_scale.transform(data.transpose())
     return pandas.DataFrame(np.transpose(df_std))
@@ -173,7 +171,6 @@ def perform_DBSCAN(data,DBSCAN_Object):
     plt.show()
     
 def perform_KMEANS(data,KMEANS_Object,plotCluster = True):
-    from sklearn.cluster import KMeans
     Clusters = KMEANS_Object.fit(data)
     if np.unique(Clusters.labels_).size == 1:
         print "Only 1 cluster to plot, no figures are generated"
@@ -295,6 +292,22 @@ def perform_MinBatckKMEANS(data,MiniKMEANS_Object):
     ax.set_ylabel('Consumption',fontsize=9)
     ax.set_xlabel('hour',fontsize=9)
     plt.show()
+    
+def main():
+    # This is a working example:
+    ClustersDefinition = {'cos_0':[10,24,1],'cos_1':[80,24,15],'random':[10,24,3]}
+    data = CreateClusters(ClustersDefinition)
+    plot_df(data,'NO')
+    data_norm = normalize_data(data)
+    plot_df(data_norm,'YES')
+    find_KMEANS_number_clusters(data_norm,maxclusters = 20)
+    KMEANS_Object = KMeans(n_clusters=3,n_init=1000,max_iter=500,n_jobs=-1)
+    perform_KMEANS(data_norm,KMEANS_Object,plotCluster = True)
+    
+    
+      
+if __name__ == "__main__":
+    main()
     
     
     
